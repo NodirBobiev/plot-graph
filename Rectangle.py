@@ -1,5 +1,5 @@
 """
-  _____ (x, y)
+  ,_____ (x, y)
  V
  .____________
  |           |   |
@@ -8,54 +8,103 @@
   -- width --
 
 """
+from Vector2 import Vector2
+
 
 class Rectangle:
-    def __init__(self, x, y, width, height):
-        self._x, self._y, self._width, self._height = x, y, width, height
+    def __init__(self, size: Vector2, top_left: Vector2 = None, top_right: Vector2 = None,
+                 bottom_left: Vector2 = None, bottom_right: Vector2 = None, center: Vector2 = None):
+        self.size = size
+        if top_left:
+            self.top_left = top_left
+        elif top_right:
+            self.top_right = top_right
+        elif bottom_left:
+            self.bottom_left = bottom_left
+        elif bottom_right:
+            self.bottom_right = bottom_right
+        elif center:
+            self.center = center
+        else:
+            raise ValueError("At least one of the positions must be given!")
 
-    def get_width(self):
-        return self._width
+    def __eq__(self, rect):
+        return self.size == rect.size and self.top_left == rect.top_left
 
-    def get_height(self):
-        return self._height
+    def __str__(self):
+        return f"<Class 'Rectangle'<->(size={self.size}, top_left={self.top_left})>"
 
-    def get_x(self):
-        return self._x
+    @property
+    def size(self):
+        return self._size.copy()
 
-    def get_y(self):
-        return self._y
+    @property
+    def width(self):
+        return self.size.x
 
-    def get_center_x(self):
-        return self._x + self._width / 2
+    @property
+    def height(self):
+        return self.size.y
 
-    def get_center_y(self):
-        return self._y + self._height / 2
+    @property
+    def top_left(self):
+        return self._top_left.copy()
 
-    def get_center(self):
-        return [self.get_center_x(), self.get_center_y()]
+    @property
+    def top_right(self):
+        return Vector2(self.top_left.x + self.width - 1, self.top_left.y)
 
-    def set_width(self, new_width):
-        self._width = new_width
+    @property
+    def bottom_left(self):
+        return Vector2(self.top_left.x, self.top_left.y + self.height - 1)
 
-    def set_height(self, new_height):
-        self._height = new_height
+    @property
+    def bottom_right(self):
+        return Vector2(self.top_left.x + self.width - 1, self.top_left.y + self.height - 1)
 
-    def set_x(self, new_x):
-        self._x = new_x
+    @property
+    def center(self):
+        return Vector2(self.top_left.x + self.width // 2, self.top_left.y + self.height // 2)
 
-    def set_y(self, new_y):
-        self._y = new_y
+    @size.setter
+    def size(self, new_size: Vector2):
+        self._size = new_size.copy()
 
-    def set_pos(self, new_pos):
-        self.set_x(new_pos[0])
-        self.set_y(new_pos[1])
+    @width.setter
+    def width(self, new_width: int):
+        self._size.x = new_width
 
-    def set_center_x(self, new_x):
-        self._x = new_x - self._width / 2
+    @height.setter
+    def height(self, new_height: int):
+        self._size.y = new_height
 
-    def set_center_y(self, new_y):
-        self._y = new_y - self._height / 2
+    @top_left.setter
+    def top_left(self, new_top_left: Vector2):
+        self._top_left = new_top_left.copy()
 
-    def set_center(self, new_pos):
-        self.set_center_x(new_pos[0])
-        self.set_center_y(new_pos[1])
+    @top_right.setter
+    def top_right(self, new_top_right: Vector2):
+        self.top_left = Vector2(new_top_right.x - self.size.x + 1, new_top_right.y)
+
+    @bottom_left.setter
+    def bottom_left(self, new_bottom_left: Vector2):
+        self.top_left = Vector2(new_bottom_left.x, new_bottom_left.y - self.size.y + 1)
+
+    @bottom_right.setter
+    def bottom_right(self, new_bottom_right: Vector2):
+        self.top_left = Vector2(new_bottom_right.x - self.size.x + 1, new_bottom_right.y - self.size.y + 1)
+
+    @center.setter
+    def center(self, new_center):
+        self.top_left = Vector2(new_center.x - self.size.x // 2, new_center.y - self.size.y // 2)
+
+    def check_point(self, point: Vector2):
+        if self.top_left.x <= point.x <= self.top_right.x and self.top_left.y <= point.y <= self.bottom_left.y:
+            return True
+        return False
+
+    def move(self, ds: Vector2):
+        self.top_left = Vector2(self.top_left.x + ds.x, self.top_left.y + ds.y)
+
+    def copy(self):
+        return Rectangle(size=self.size, top_left=self.top_left)
